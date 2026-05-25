@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>농도와 화학 반응 속도</title>
+    <style>
+         #instructionScreen {
+            position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: white;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+    }
+    #nextButton {
+        font-size: 16px;
+        padding: 10px 20px;
+        margin-top: 20px;
+        cursor: pointer;
+    }
+        canvas { border: 2px solid navy; }
+        button {
+            margin: 10px;
+            padding: 5px 10px;
+            background-color: #FFFACD; /* 연한 노란색 */
+            border: 2px solid navy; /* 검은색 테두리 */
+            font-weight: bold;
+            cursor: pointer;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        #canvasContainer {
+            position: relative;
+            width: 800px;
+            margin: 0 auto;
+        }
+        #reactionCanvas {
+            border: 2px solid navy;
+        }
+        .canvas-button {
+            position: absolute;
+            background-color: #FFFACD;
+            border: 2px solid black;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        #kio3Button { left: 200px; top: 220px; }
+        #h2oButton { left: 350px; top: 220px; }
+        #nahso3Button { left: 500px; top: 220px; }
+        #buttonContainer {
+    text-align: center;
+    margin-top: 20px;
+}
+#reactionButton, #resetButton {
+    display: inline-block;
+}
+        </style>
+</head>
+<body>
+    </style>
+    <div id="instructionScreen">
+        <h2>사용 방법</h2>
+        <ol>
+            <li>'KIO3(aq)' 버튼을 클릭하여 각 시험관에 KIO3 용액을 넣습니다.</li>
+            <li>'H2O(l)' 버튼을 클릭하여 각 시험관에 물을 넣습니다.</li>
+            <li>'NaHSO3+녹말' 버튼을 클릭하여 각 시험관에 NaHSO3와 녹말 용액을 넣습니다.</li>
+            <li>'Reaction' 버튼을 클릭하여 반응을 시작합니다.</li>
+            <li>반응이 진행되면서 색상 변화와 시간을 관찰하세요.</li>
+            <li>'Reset' 버튼을 클릭하여 시뮬레이션을 초기화할 수 있습니다.</li>
+        </ol>
+        <button id="nextButton">다음</button>
+    </div>
+    <div id="canvasContainer">
+        <canvas id="reactionCanvas" width="800" height="600"></canvas>
+        <button id="kio3Button" class="canvas-button">KIO3(aq)</button>
+        <button id="h2oButton" class="canvas-button">H2O(l)</button>
+        <button id="nahso3Button" class="canvas-button">NaHSO3+녹말</button>
+    </div>
+    <div id="buttonContainer">
+        <button id="reactionButton">Reaction</button>
+        <button id="resetButton">Reset</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('reactionCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let step = 0;
+        let tubes = [
+            {x: 200, y: 400, kio3: 0, water: 0, nahso3: 0, mixed: false, time: 12, counter: 0},
+            {x: 350, y: 400, kio3: 0, water: 0, nahso3: 0, mixed: false, time: 8, counter: 0},
+            {x: 500, y: 400, kio3: 0, water: 0, nahso3: 0, mixed: false, time: 5, counter: 0},
+            {x: 650, y: 400, kio3: 0, water: 0, nahso3: 0, mixed: false, time: 3, counter: 0}
+        ];
+       
+        function drawTestTube(x, y, width, height, fillColor, fillLevel) {
+            const bottomRadius = width / 2;
+            const topRadius = width / 2.5;
+
+            ctx.beginPath();
+            ctx.moveTo(x - topRadius, y);
+            ctx.lineTo(x - width/2, y + height - bottomRadius);
+            ctx.quadraticCurveTo(x, y + height + bottomRadius, x + width/2, y + height - bottomRadius);
+            ctx.lineTo(x + topRadius, y);
+            ctx.closePath();
+
+            let gradient = ctx.createLinearGradient(x - width/2, y, x + width/2, y);
+            gradient.addColorStop(0, 'rgba(180, 180, 180, 0.8)');
+            gradient.addColorStop(0.3, 'rgba(240, 240, 240, 0.9)');
+            gradient.addColorStop(0.7, 'rgba(240, 240, 240, 0.9)');
+            gradient.addColorStop(1, 'rgba(180, 180, 180, 0.8)');
+
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(100, 100, 100, 0.8)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            if (fillColor && fillLevel > 0) {
+                ctx.beginPath();
+                const liquidHeight = height * fillLevel;
+                const liquidY = y + height - liquidHeight;
+
+                ctx.moveTo(x - width/2 + 1, y + height - bottomRadius);
+                ctx.quadraticCurveTo(x, y + height + bottomRadius - 1, x + width/2 - 1, y + height - bottomRadius);
+                ctx.lineTo(x + width/2 - 1, liquidY);
+                ctx.quadraticCurveTo(x, liquidY, x - width/2 + 1, liquidY);
+                ctx.closePath();
+
+                ctx.fillStyle = fillColor;
+                ctx.fill();
+            }
+
+            ctx.beginPath();
+            ctx.moveTo(x - width/2 + 2, y + height - bottomRadius);
+            ctx.lineTo(x - topRadius + 2, y + 5);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        function drawDropper(x, y, color) {
+            const scale = 1.2; // 120% 크기
+            const dropperHeight = 80 * scale;
+            const dropperWidth = 15 * scale;
+            const tipHeight = 20 * scale;
+
+            // 스포이트 본체
+            ctx.beginPath();
+            ctx.moveTo(x - dropperWidth/2, y);
+            ctx.lineTo(x - dropperWidth/2, y + dropperHeight - tipHeight);
+            ctx.lineTo(x - dropperWidth/4, y + dropperHeight);
+            ctx.lineTo(x + dropperWidth/4, y + dropperHeight);
+            ctx.lineTo(x + dropperWidth/2, y + dropperHeight - tipHeight);
+            ctx.lineTo(x + dropperWidth/2, y);
+            ctx.closePath();
+
+            let gradient = ctx.createLinearGradient(x - dropperWidth/2, y, x + dropperWidth/2, y);
+            gradient.addColorStop(0, 'rgba(220, 220, 220, 0.9)');
+            gradient.addColorStop(0.5, 'rgba(240, 240, 240, 0.9)');
+            gradient.addColorStop(1, 'rgba(220, 220, 220, 0.9)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(150, 150, 150, 0.5)'; // 연한 테두리
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // 스포이트 상단 (타원형)
+            ctx.beginPath();
+            ctx.ellipse(x, y, dropperWidth/2, dropperWidth/4, 0, 0, Math.PI * 2);
+            gradient = ctx.createLinearGradient(x - dropperWidth/2, y - dropperWidth/4, x + dropperWidth/2, y + dropperWidth/4);
+            gradient.addColorStop(0, 'rgba(200, 200, 200, 0.9)');
+            gradient.addColorStop(0.5, 'rgba(240, 240, 240, 0.9)');
+            gradient.addColorStop(1, 'rgba(200, 200, 200, 0.9)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            ctx.stroke();
+
+            // 액체 색상
+            ctx.fillStyle = color;
+            ctx.fillRect(x - dropperWidth/2 + 2, y + 20 * scale, dropperWidth - 4, dropperHeight - tipHeight - 22 * scale);
+
+            // 하이라이트 효과
+            ctx.beginPath();
+            ctx.moveTo(x - dropperWidth/2 + 1, y);
+            ctx.lineTo(x - dropperWidth/2 + 1, y + dropperHeight - tipHeight);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
+
+        function drawButton(x, y, width, height, text) {
+            const radius = 5;
+            ctx.fillStyle = '#FFFACD';  // 연한 노란색
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.strokeStyle = 'black';  // 검은색 테두리
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            ctx.fillStyle = 'black';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x + width/2, y + height/2);
+        }
+
+        function drawTubes() {
+            tubes.forEach((tube, index) => {
+                let fillColor = 'rgba(255, 255, 255, 0)';
+                let fillLevel = (tube.kio3 + tube.water + tube.nahso3) / 5 * 0.7;
+
+                if (tube.water > 0 || tube.kio3 > 0) {
+                    fillColor = 'rgba(180, 220, 255, 0.7)';
+                }
+
+                if (tube.nahso3 > 0) {
+                    fillColor = 'rgba(200, 200, 200, 0.5)';
+                }
+
+                if (tube.mixed) {
+                    if (tube.counter >= tube.time) {
+                        fillColor = 'rgba(0, 0, 150, 0.7)';
+                    } else {
+                        fillColor = 'rgba(200, 200, 200, 0.5)';
+                    }
+                }
+
+                drawTestTube(tube.x, tube.y, 30, 150, fillColor, fillLevel);
+
+                if (tube.mixed) {
+                    ctx.fillStyle = 'black';
+                    ctx.font = '16px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`${tube.counter}초`, tube.x, tube.y + 170);
+                }
+
+                ctx.fillStyle = 'black';
+                ctx.textAlign = 'left';
+                ctx.font = '14px Arial';
+                ctx.fillText(`KIO3: ${tube.kio3}mL`, tube.x - 40, tube.y - 65);
+                ctx.fillText(`H2O: ${tube.water}mL`, tube.x - 40, tube.y - 45);
+                if (tube.nahso3 > 0) {
+                    ctx.fillText(`NaHSO3: ${tube.nahso3}mL`, tube.x - 40, tube.y - 25);
+                }
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'black';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('농도와 화학 반응 속도', canvas.width / 2, 40);
+            drawTubes();
+            drawDropper(250, 100, 'rgba(180, 220, 255, 0.7)');
+            drawDropper(400, 100, 'rgba(180, 220, 255, 0.7)');
+            drawDropper(550, 100, 'rgba(200, 200, 200, 0.7)');
+        }
+
+        function reset() {
+            step = 0;
+            tubes = tubes.map(tube => ({...tube, kio3: 0, water: 0, nahso3: 0, mixed: false, counter: 0}));
+            draw();
+        }
+
+        function reset() {
+    step = 0;
+    tubes = tubes.map(tube => ({...tube, kio3: 0, water: 0, nahso3: 0, mixed: false, counter: 0}));
+    draw();
+}
+
+document.getElementById('kio3Button').addEventListener('click', () => {
+    if (step === 0) {
+        tubes[0].kio3 = 1; tubes[1].kio3 = 1.5; tubes[2].kio3 = 2; tubes[3].kio3 = 2.5;
+        step++;
+        draw();
+    }
+});
+
+document.getElementById('h2oButton').addEventListener('click', () => {
+    if (step === 1) {
+        tubes[0].water = 1.5; tubes[1].water = 1; tubes[2].water = 0.5; tubes[3].water = 0;
+        step++;
+        draw();
+    }
+});
+
+document.getElementById('nahso3Button').addEventListener('click', () => {
+    if (step === 2) {
+        tubes.forEach(tube => tube.nahso3 = 2.5);
+        step++;
+        draw();
+    }
+});
+
+document.getElementById('reactionButton').addEventListener('click', () => {
+    if (step === 3) {
+        tubes.forEach(tube => {
+            if (!tube.mixed) {
+                tube.mixed = true;
+                let interval = setInterval(() => {
+                    tube.counter++;
+                    draw();
+                    if (tube.counter >= tube.time) {
+                        clearInterval(interval);
+                    }
+                }, 1000);
+            }
+        });
+        draw();
+    }
+});
+
+document.getElementById('resetButton').addEventListener('click', reset);
+
+document.getElementById('nextButton').addEventListener('click', function() {
+    document.getElementById('instructionScreen').style.display = 'none';
+    draw();
+});
+
+draw();
+</script>
+  
+</body>
+</html>

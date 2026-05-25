@@ -1,0 +1,332 @@
+<html>
+<head>
+<title>ATOMIC MASS</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f0f0f0;
+  }
+  .container {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .main-content {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 20px;
+  }
+  .scale {
+    width: 400px;
+    height: 300px;
+    position: relative;
+    margin: 20px auto;
+  }
+  .fulcrum {
+    width: 20px;
+    height: 120px;
+    background-color: #000080;
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: -5px 5px 10px rgba(0,0,0,0.3);
+    border-radius: 5px;
+  }
+  .beam {
+    width: 300px;
+    height: 20px;
+    background-color: #87CEEB;
+    position: absolute;
+    top: 90px;
+    left: 50px;
+    transform-origin: center;
+    transition: transform 0.5s;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+    border-radius: 10px;
+  }
+  .beam::before {
+    content: '';
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background-color: #87CEEB;
+    border-radius: 50%;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  }
+  .pan {
+    width: 100px;
+    height: 20px;
+    background-color: #9370DB;
+    position: absolute;
+    top: 180px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid #808080;
+    box-shadow: 0 5px 10px rgba(0,0,0,0.3);
+  }
+  .pan-left {
+    left: 0;
+  }
+  .pan-right {
+    right: 0;
+  }
+  .mass-display {
+    position: absolute;
+    top: 205px;
+    font-size: 14px;
+    font-weight: bold;
+    width: 100px;
+    text-align: center;
+  }
+  .mass-left {
+    left: 0;
+  }
+  .mass-right {
+    right: 0;
+  }
+  .select-button {
+    position: absolute;
+    top: 230px;
+    width: 60px;
+    padding: 5px;
+    font-size: 12px;
+    cursor: pointer;
+    background-color: #f8f8f8;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 15px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+  }
+  .select-button:hover {
+    background-color: #e8e8e8;
+  }
+  .select-button.active {
+    background-color: #4CAF50;
+    color: white;
+  }
+  .select-left {
+    left: 20px;
+  }
+  .select-right {
+    right: 20px;
+  }
+  .atoms {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+  }
+  .atom {
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+  }
+  .hydrogen { background-color: white; border: 2px solid #333; width: 20px; height: 20px; font-size: 12px; }
+  .oxygen { background-color: red; width: 39px; height: 39px; font-size: 16px; color: white; }
+  .carbon { background-color: black; width: 42px; height: 42px; font-size: 18px; color: white; }
+  .nitrogen { background-color: blue; width: 40px; height: 40px; font-size: 18px; color: white; }
+  .atom-on-scale {
+    position: absolute;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    transition: background-color 0.3s;
+  }
+  .button:hover {
+    background-color: #45a049;
+  }
+  .modal {
+    display: flex;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    justify-content: center;
+    align-items: center;
+  }
+  .modal-content {
+    background-color: #fefefe;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 500px;
+    text-align: left;
+  }
+  .simulator {
+    display: none;
+  }
+</style>
+</head>
+<body>
+<div id="instructionsModal" class="modal">
+  <div class="modal-content">
+    <h2>How to Use the Atomic Mass Simulator</h2>
+    <ol>
+      <li>Click the "Select" button under either the left or right pan to choose which side to add atoms to.</li>
+      <li>Click on the atom symbols (H, O, C, N) at the bottom to add atoms to the selected pan.</li>
+      <li>Observe how the balance beam tilts based on the total mass on each side.</li>
+      <li>Click on atoms in the pans to remove them.</li>
+      <li>Use the "Reset" button to clear both pans and start over.</li>
+    </ol>
+    <p>The goal is to understand how different atoms contribute to the overall mass and balance.</p>
+    <button class="button" onclick="startSimulator()">Start Simulator</button>
+  </div>
+</div>
+
+<div id="simulator" class="simulator">
+  <div class="container">
+    <h1>ATOMIC MASS</h1>
+    <div class="main-content">
+      <div class="scale">
+        <div class="fulcrum"></div>
+        <div class="beam"></div>
+        <div class="pan pan-left"></div>
+        <div class="pan pan-right"></div>
+        <button class="select-button select-left" onclick="selectPan('left')">Select</button>
+        <button class="select-button select-right" onclick="selectPan('right')">Select</button>
+      </div>
+    </div>
+    <div class="atoms">
+      <div class="atom hydrogen" onclick="addAtom('H')">H</div>
+      <div class="atom oxygen" onclick="addAtom('O')">O</div>
+      <div class="atom carbon" onclick="addAtom('C')">C</div>
+      <div class="atom nitrogen" onclick="addAtom('N')">N</div>
+    </div>
+    <button class="button" onclick="reset()">Reset</button>
+  </div>
+</div>
+
+<script>
+  let selectedPan = null;
+  const atoms = { left: [], right: [] };
+  const masses = { H: 1, O: 16, C: 12, N: 14 };
+  const colors = { H: 'white', O: 'red', C: 'black', N: 'blue' };
+  const sizes = { H: 20, O: 39, C: 42, N: 40 };
+
+  function startSimulator() {
+    document.getElementById('instructionsModal').style.display = 'none';
+    document.getElementById('simulator').style.display = 'block';
+  }
+
+  function selectPan(side) {
+    selectedPan = side;
+    document.querySelectorAll('.select-button').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    document.querySelector(`.select-${side}`).classList.add('active');
+  }
+
+  function addAtom(type) {
+    if (selectedPan === null) return;
+    
+    atoms[selectedPan].push(type);
+    const atom = document.createElement('div');
+    atom.className = `atom ${type.toLowerCase()} atom-on-scale`;
+    atom.style.backgroundColor = colors[type];
+    atom.style.width = `${sizes[type]}px`;
+    atom.style.height = `${sizes[type]}px`;
+    atom.style.display = 'flex';
+    atom.style.justifyContent = 'center';
+    atom.style.alignItems = 'center';
+    atom.style.fontWeight = 'bold';
+    atom.style.fontSize = type === 'H' ? '12px' : '16px';
+    atom.style.color = type === 'H' ? 'black' : 'white';
+    atom.style.boxShadow = '0 3px 6px rgba(0,0,0,0.2)';
+    if (type === 'H') {
+      atom.style.border = '2px solid #333';
+    }
+    atom.textContent = type;
+    atom.onclick = () => removeAtom(selectedPan, atoms[selectedPan].length - 1);
+    
+    const pan = document.querySelector(`.pan-${selectedPan}`);
+    pan.appendChild(atom);
+    
+    positionAtomsInPan(selectedPan);
+    updateScale();
+  }
+
+  function removeAtom(side, index) {
+    atoms[side].splice(index, 1);
+    const pan = document.querySelector(`.pan-${side}`);
+    pan.removeChild(pan.children[index]);
+    positionAtomsInPan(side);
+    updateScale();
+  }
+
+  function positionAtomsInPan(side) {
+    const pan = document.querySelector(`.pan-${side}`);
+    const atomsInPan = pan.querySelectorAll('.atom-on-scale');
+    const panWidth = 100;
+    const panHeight = 20;
+    
+    const maxAtomsPerColumn = 3;
+    const columnWidth = panWidth / maxAtomsPerColumn;
+    
+    atomsInPan.forEach((atom, index) => {
+      const column = index % maxAtomsPerColumn;
+      const row = Math.floor(index / maxAtomsPerColumn);
+      const atomSize = sizes[atoms[side][index]];
+      
+      atom.style.left = `${column * columnWidth + (columnWidth - atomSize) / 2}px`;
+      atom.style.bottom = `${panHeight + row * atomSize}px`;
+    });
+  }
+
+  function updateScale() {
+    const leftMass = atoms.left.reduce((sum, atom) => sum + masses[atom], 0);
+    const rightMass = atoms.right.reduce((sum, atom) => sum + masses[atom], 0);
+    const beam = document.querySelector('.beam');
+        
+    const angle = Math.atan2(rightMass - leftMass, 20) * (180 / Math.PI);
+    const clampedAngle = Math.max(Math.min(angle, 20), -20);
+    
+    beam.style.transform = `rotate(${clampedAngle}deg)`;
+  }
+
+  function reset() {
+    atoms.left = [];
+    atoms.right = [];
+    selectedPan = null;
+    const pans = document.querySelectorAll('.pan');
+    pans.forEach(pan => {
+      while (pan.firstChild) {
+        pan.removeChild(pan.firstChild);
+      }
+    });
+    document.querySelectorAll('.select-button').forEach(btn => {
+      btn.classList.remove('active');
+    });
+    updateScale();
+  }
+</script>
+</body>
+</html>

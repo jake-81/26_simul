@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>화학 실험</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 250px;
+            height: 150px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);  /* 배경을 더 밝게 조정 */
+            z-index: 1;
+        }
+        .card-content {
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            text-align: center;  /* 텍스트 가운데 정렬 */
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        h2 {
+            margin-top: 0;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            font-size: 1.3em;
+        }
+        p {
+            color: #ffffff;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            font-size: 0.9em;
+        }
+        .atomic-mass { background-image: url('atomic_mass_bg.jpg'); }
+        .quantitative-relationships { background-image: url('quantitative_relationships_bg.jpg'); }
+        .water-electrolysis { background-image: url('water_electrolysis_bg.jpg'); }
+        .reaction-rate { background-image: url('reaction_rate_bg.jpg'); }
+        .first-order-reaction { background-image: url('first_order_reaction_bg.jpg'); }
+        .concentration-rate { background-image: url('concentration_rate_bg.jpg'); }
+        .temperature-rate { background-image: url('temperature_rate_bg.jpg'); }
+    </style>
+</head>
+<body>
+    <h1>화학 실험</h1>
+    <div class="container">
+        <div class="card atomic-mass" onclick="openSimulation('atomic_mass_comparison.html')">
+            <div class="card-content">
+                <h2>원자량 비교</h2>
+                <p>다양한 원자의 질량 비교 실험</p>
+            </div>
+        </div>
+        <div class="card quantitative-relationships" onclick="openSimulation('quantitative_relationships.html')">
+            <div class="card-content">
+                <h2>화학 반응의 양적 관계</h2>
+                <p>화학 반응에서의 물질량 관계 탐구</p>
+            </div>
+        </div>
+        <div class="card water-electrolysis" onclick="openSimulation('water_electrolysis.html')">
+            <div class="card-content">
+                <h2>물의 전기 분해</h2>
+                <p>물의 전기분해 과정을 시각화</p>
+            </div>
+        </div>
+        <div class="card reaction-rate" onclick="openSimulation('reaction_rate_sim.html')">
+            <div class="card-content">
+                <h2>반응 속도</h2>
+                <p>염산과 마그네슘의 반응 속도 관찰</p>
+            </div>
+        </div>
+        <div class="card first-order-reaction" onclick="openSimulation('first_order_reaction_sim.html')">
+            <div class="card-content">
+                <h2>1차 반응</h2>
+                <p>A → 2B 반응의 실시간 시뮬레이션</p>
+            </div>
+        </div>
+        <div class="card concentration-rate" onclick="openSimulation('concentration_rate_clock_reaction.html')">
+            <div class="card-content">
+                <h2>농도와 화학 반응 속도</h2>
+                <p>농도가 화학 반응 속도에 미치는 영향을 확인</p>
+            </div>
+        </div>
+        <div class="card temperature-rate" onclick="openSimulation('temperature_rate_clock_reaction.html')">
+            <div class="card-content">
+                <h2>온도와 화학 반응 속도</h2>
+                <p>온도가 화학 반응 속도에 미치는 영향 관찰</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openSimulation(fileName) {
+            window.location.href = fileName;
+        }
+    </script>
+</body>
+</html>

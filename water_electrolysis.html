@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>물의 전기분해 시뮬레이션</title>
+<style>
+  body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f0f0; }
+  .container { text-align: center; }
+  .introduction, .simulation { width: 100%; max-width: 600px; }
+  .introduction { background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+  .introduction h1 { color: #333; }
+  .introduction p { text-align: left; line-height: 1.6; }
+  .introduction ol { padding-left: 0; list-style-type: none; }
+  .introduction li { margin-bottom: 10px; display: flex; align-items: flex-start; text-align: left; }
+  .introduction li span { margin-right: 10px; font-weight: bold; min-width: 20px; }
+  .apparatus { position: relative; width: 300px; height: 450px; background-color: #fff; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); margin: auto; }
+  .beaker { position: absolute; bottom: 70px; left: 50px; width: 200px; height: 250px; background-color: transparent; border: 3px solid #666; border-top: none; border-radius: 0 0 20px 20px; overflow: hidden; }
+  .solution { position: absolute; bottom: 0; left: 0; width: 100%; height: 70%; background-color: rgba(173, 216, 230, 0.3); }
+  .solution-label { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-size: 14px; color: #333; z-index: 3; }
+  .electrode { position: absolute; width: 6px; height: 184px; background-color: #666; bottom: 70px; z-index: 2; }
+  .electrode.left { left: 93px; }
+  .electrode.right { right: 93px; }
+  .polarity { 
+    position: absolute; 
+    bottom: 30px; 
+    font-weight: bold; 
+    font-size: 16px; 
+    background-color: #E6E6FA; 
+    padding: 5px 10px; 
+    border-radius: 5px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 20px;
+    text-align: center;
+  }
+  .polarity.left { left: 81px; }
+  .polarity.right { right: 81px; }
+  .test-tube { 
+    position: absolute; 
+    width: 40px; 
+    height: 167px; 
+    border: 2px solid #666; 
+    border-bottom: none; 
+    border-radius: 20px 20px 0 0; 
+    overflow: hidden; 
+    bottom: 150px; 
+    background-color: white;
+  }
+  .test-tube.left { left: 75px; }
+  .test-tube.right { right: 75px; }
+  .liquid { 
+    position: absolute; 
+    bottom: 0; 
+    left: 0; 
+    right: 0; 
+    height: 100%; 
+    background-color: rgba(173, 216, 230, 0.3); 
+    transition: height 0.5s; 
+  }
+  .bubble { 
+    position: absolute; 
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,1) 0%, rgba(255,255,255,0.9) 20%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0.7) 80%, rgba(255,255,255,0.6) 100%); 
+    border-radius: 50%; 
+    animation: rise 2s infinite; 
+  }
+  @keyframes rise { 
+    0% { transform: translateY(0) scale(1); opacity: 1; } 
+    100% { transform: translateY(-100px) scale(0.8); opacity: 0.7; }
+  }
+  button { margin: 10px; padding: 10px 20px; font-size: 16px; cursor: pointer; background-color: #4CAF50; color: white; border: none; border-radius: 5px; transition: background-color 0.3s; }
+  button:hover { background-color: #45a049; }
+  button:active { background-color: #3e8e41; }
+  #volumeRatioBtn, #resetBtn { display: none; }
+  #resetBtn { background-color: #f44336; }
+  #resetBtn:hover { background-color: #d32f2f; }
+  #resetBtn:active { background-color: #b71c1c; }
+  .ratio-display { display: none; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background-color: rgba(255,255,255,0.8); padding: 10px; border-radius: 5px; font-weight: bold; text-align: center; }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="introduction">
+    <h1>물의 전기 분해</h1>
+    <p>이 시뮬레이션은 물의 전기분해 과정을 보여줍니다. 전기분해는 전기 에너지를 이용하여 물질을 분해하는 화학 반응입니다.</p>
+    <p><strong>작동 방법:</strong></p>
+    <ol>
+      <li><span>1.</span> "Start" 버튼을 클릭하여 시뮬레이션을 시작합니다.</li>
+      <li><span>2.</span> 물이 전기 분해되는 과정을 관찰합니다.</li>
+      <li><span>3.</span> "Stop" 버튼으로 시뮬레이션을 중지할 수 있습니다.</li>
+      <li><span>4.</span> 반응이 완료되면 "Show Volume Ratio" 버튼으로 생성된 기체의 부피비를 확인할 수 있습니다.</li>
+      <li><span>5.</span> "Reset" 버튼으로 시뮬레이션을 초기화할 수 있습니다.</li>
+    </ol>
+    <button id="nextBtn">Next</button>
+  </div>
+  <div class="simulation hidden">
+    <h2>Electrolysis of Water</h2>
+    <div class="apparatus">
+      <div class="beaker">
+        <div class="solution"></div>
+        <div class="solution-label">Na<sub>2</sub>SO<sub>4</sub>(aq)</div>
+      </div>
+      <div class="electrode left"></div>
+      <div class="electrode right"></div>
+      <div class="polarity left">(-)</div>
+      <div class="polarity right">(+)</div>
+      <div class="test-tube left">
+        <div class="liquid"></div>
+      </div>
+      <div class="test-tube right">
+        <div class="liquid"></div>
+      </div>
+      <div class="ratio-display">Volume Ratio<br>(-) : (+) = 2 : 1</div>
+    </div>
+    <button id="startBtn">Start</button>
+    <button id="stopBtn">Stop</button>
+    <button id="volumeRatioBtn">Show Volume Ratio</button>
+    <button id="resetBtn">Reset</button>
+  </div>
+</div>
+<script>
+  const introductionDiv = document.querySelector('.introduction');
+  const simulationDiv = document.querySelector('.simulation');
+  const nextBtn = document.getElementById('nextBtn');
+  const startBtn = document.getElementById('startBtn');
+  const stopBtn = document.getElementById('stopBtn');
+  const volumeRatioBtn = document.getElementById('volumeRatioBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const leftLiquid = document.querySelector('.test-tube.left .liquid');
+  const rightLiquid = document.querySelector('.test-tube.right .liquid');
+  const ratioDisplay = document.querySelector('.ratio-display');
+  
+  let isRunning = false;
+  let animationFrame;
+
+  nextBtn.addEventListener('click', () => {
+    introductionDiv.classList.add('hidden');
+    simulationDiv.classList.remove('hidden');
+  });
+
+  function createBubble(container) {
+    const bubble = document.createElement('div');
+    bubble.classList.add('bubble');
+    bubble.style.left = `${Math.random() * 80 + 10}%`;
+    bubble.style.bottom = `${Math.random() * 100}%`;
+    bubble.style.width = bubble.style.height = `${Math.random() * 6 + 3}px`;
+    bubble.style.animationDuration = `${Math.random() * 1 + 1.5}s`;
+    container.appendChild(bubble);
+    setTimeout(() => {
+      bubble.remove();
+    }, 2000);
+  }
+
+  function startReaction() {
+    if (isRunning) return;
+    isRunning = true;
+    volumeRatioBtn.style.display = 'none';
+    ratioDisplay.style.display = 'none';
+    resetBtn.style.display = 'none';
+    
+    let leftHeight = 100;
+    let rightHeight = 100;
+    
+    function animate() {
+      if (leftHeight > 33) leftHeight -= 0.1;
+      if (rightHeight > 66) rightHeight -= 0.05;
+      
+      leftLiquid.style.height = `${leftHeight}%`;
+      rightLiquid.style.height = `${rightHeight}%`;
+      
+      if (Math.random() < 0.3) createBubble(leftLiquid);
+      if (Math.random() < 0.15) createBubble(rightLiquid);
+      
+      if (isRunning) {
+        if (leftHeight > 33 || rightHeight > 66) {
+          animationFrame = requestAnimationFrame(animate);
+        } else {
+          isRunning = false;
+          volumeRatioBtn.style.display = 'inline-block';
+          resetBtn.style.display = 'inline-block';
+        }
+      }
+    }
+    
+    animate();
+  }
+
+  function stopReaction() {
+    isRunning = false;
+    cancelAnimationFrame(animationFrame);
+    leftLiquid.innerHTML = '';
+    rightLiquid.innerHTML = '';
+    volumeRatioBtn.style.display = 'inline-block';
+    resetBtn.style.display = 'inline-block';
+  }
+
+  function showVolumeRatio() {
+    ratioDisplay.style.display = 'block';
+  }
+
+  function resetSimulation() {
+    isRunning = false;
+    cancelAnimationFrame(animationFrame);
+    leftLiquid.innerHTML = '';
+    rightLiquid.innerHTML = '';
+    leftLiquid.style.height = '100%';
+    rightLiquid.style.height = '100%';
+    volumeRatioBtn.style.display = 'none';
+    ratioDisplay.style.display = 'none';
+    resetBtn.style.display = 'none';
+  }
+
+  startBtn.addEventListener('click', startReaction);
+  stopBtn.addEventListener('click', stopReaction);
+  volumeRatioBtn.addEventListener('click', showVolumeRatio);
+  resetBtn.addEventListener('click', resetSimulation);
+</script>
+</body>
+</html>

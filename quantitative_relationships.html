@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quantitative relationships in chemical reactions</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #experiment {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #flask-container {
+            position: relative;
+            width: 200px;
+            height: 250px;
+            margin: 20px auto;
+        }
+        #flask {
+            width: 120px;
+            height: 180px;
+            background-color: white;
+            border: 3px solid #999;
+            border-top: none;
+            border-radius: 0 0 60px 60px;
+            position: absolute;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            overflow: hidden;
+        }
+        #liquid {
+            width: 100%;
+            height: 60%;
+            background-color: #e6f3ff;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+        }
+        #hcl-text {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: bold;
+            color: #333;
+        }
+        #bubbles {
+            width: 100%;
+            height: 60%;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .bubble {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: 50%;
+            animation: rise 3s infinite;
+        }
+        @keyframes rise {
+            0% { transform: translateY(100%) scale(0); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: translateY(-100%) scale(1); opacity: 0; }
+        }
+        #scale {
+            width: 180px;
+            height: 60px;
+            background-color: white;
+            border: 3px solid #999;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #scale-display {
+            background-color: #ffffcc;
+            color: #333;
+            font-family: 'Digital', sans-serif;
+            font-size: 24px;
+            padding: 5px;
+            text-align: right;
+            border: 1px solid #ccc;
+        }
+        #scale-buttons {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 5px;
+        }
+        .scale-button {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background-color: #333;
+            margin-left: 10px;
+        }
+        .scale-button.orange {
+            background-color: orange;
+        }
+        #caco3-options {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+        }
+        .caco3 {
+            width: 80px;
+            height: 50px;
+            background-color: #808080;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border-radius: 5px;
+            color: white;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+            font-size: 12px;
+            text-align: center;
+            padding: 5px;
+        }
+        .control-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+        #caco3-in-flask {
+            position: absolute;
+            bottom: 25%;
+            left: 10%;
+            right: 10%;
+            height: 10px;
+            opacity: 0;
+            transition: all 0.5s;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .caco3-particle {
+            width: 8px;
+            height: 8px;
+            background-color: #808080;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+<div id="experiment">
+    <h1>Quantitative relationships in chemical reactions</h1>
+    <div id="flask-container">
+        <div id="flask">
+            <div id="liquid"></div>
+            <div id="hcl-text">HCl(aq)</div>
+            <div id="bubbles"></div>
+            <div id="caco3-in-flask"></div>
+        </div>
+        <div id="scale">
+            <div id="scale-display">330.00</div>
+            <div id="scale-buttons">
+                <div class="scale-button"></div>
+                <div class="scale-button"></div>
+                <div class="scale-button orange"></div>
+            </div>
+        </div>
+    </div>
+    <div id="caco3-options">
+        <div class="caco3" id="caco3-1">CaCO3 1g</div>
+        <div class="caco3" id="caco3-2">CaCO3 2g</div>
+        <div class="caco3" id="caco3-3">CaCO3 3g</div>
+    </div>
+    <button id="start" class="control-button">Start</button>
+    <button id="stop" class="control-button">Stop</button>
+    <button id="reset" class="control-button">Reset</button>
+</div>
+
+<script>
+    let currentMass = 330.00;
+    let isReacting = false;
+    let selectedMass = 0;
+    let reactionInterval;
+    let bubbleInterval;
+
+    function updateScale(mass) {
+        document.getElementById('scale-display').innerText = mass.toFixed(2);
+    }
+
+    function addCaCO3ToFlask(mass) {
+        const caco3InFlask = document.getElementById('caco3-in-flask');
+        caco3InFlask.innerHTML = '';
+        caco3InFlask.style.opacity = '1';
+        
+        const particleCount = mass * 5;
+        for (let i = 0; i < particleCount; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'caco3-particle';
+            caco3InFlask.appendChild(particle);
+        }
+    }
+
+    function createBubble() {
+        const bubble = document.createElement('div');
+        bubble.classList.add('bubble');
+        bubble.style.left = Math.random() * 100 + '%';
+        bubble.style.width = bubble.style.height = (Math.random() * 15 + 10) + 'px';
+        bubble.style.animationDuration = (Math.random() * 2 + 2) + 's';
+        document.getElementById('bubbles').appendChild(bubble);
+        setTimeout(() => bubble.remove(), 3000);
+    }
+
+    function startBubbles() {
+        document.getElementById('bubbles').style.opacity = 1;
+        bubbleInterval = setInterval(createBubble, 100);
+    }
+
+    function stopBubbles() {
+        clearInterval(bubbleInterval);
+        document.getElementById('bubbles').style.opacity = 0;
+        document.getElementById('bubbles').innerHTML = '';
+    }
+
+    function startReaction() {
+        if (isReacting || selectedMass === 0) return;
+        isReacting = true;
+        const startTime = Date.now();
+        const startMass = currentMass;
+        let finalMass, duration;
+
+        switch(selectedMass) {
+            case 1:
+                finalMass = 330.56;
+                duration = 5000;
+                break;
+            case 2:
+                finalMass = 331.12;
+                duration = 7000;
+                break;
+            case 3:
+                finalMass = 331.68;
+                duration = 10000;
+                break;
+        }
+
+        const massDiff = startMass - finalMass;
+
+        startBubbles();
+
+        reactionInterval = setInterval(() => {
+            const elapsedTime = Date.now() - startTime;
+            if (elapsedTime < duration) {
+                currentMass = startMass - (massDiff * (elapsedTime / duration));
+                updateScale(currentMass);
+                document.getElementById('caco3-in-flask').style.opacity = 1 - (elapsedTime / duration);
+            } else {
+                currentMass = finalMass;
+                updateScale(currentMass);
+                stopBubbles();
+                document.getElementById('caco3-in-flask').style.opacity = 0;
+                isReacting = false;
+                clearInterval(reactionInterval);
+            }
+        }, 50);
+    }
+
+    function stopReaction() {
+        if (isReacting) {
+            clearInterval(reactionInterval);
+            stopBubbles();
+            isReacting = false;
+        }
+    }
+
+    document.getElementById('caco3-1').addEventListener('click', () => {
+        if (!isReacting) {
+            currentMass = 331.00;
+            selectedMass = 1;
+            updateScale(currentMass);
+            addCaCO3ToFlask(1);
+        }
+    });
+
+    document.getElementById('caco3-2').addEventListener('click', () => {
+        if (!isReacting) {
+            currentMass = 332.00;
+            selectedMass = 2;
+            updateScale(currentMass);
+            addCaCO3ToFlask(2);
+        }
+    });
+
+    document.getElementById('caco3-3').addEventListener('click', () => {
+        if (!isReacting) {
+            currentMass = 333.00;
+            selectedMass = 3;
+            updateScale(currentMass);
+            addCaCO3ToFlask(3);
+        }
+    });
+
+    document.getElementById('start').addEventListener('click', startReaction);
+    document.getElementById('stop').addEventListener('click', stopReaction);
+
+    document.getElementById('reset').addEventListener('click', () => {
+        stopReaction();
+        currentMass = 330.00;
+        selectedMass = 0;
+        updateScale(currentMass);
+        document.getElementById('caco3-in-flask').style.opacity = 0;
+    });
+
+    // 초기 스케일 설정
+    updateScale(currentMass);
+</script>
+</body>
+</html>

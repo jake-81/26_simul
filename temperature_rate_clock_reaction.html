@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>온도와 화학 반응 속도</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        .instruction-screen, .simulation-screen {
+            display: none;
+        }
+        .instruction-screen.active, .simulation-screen.active {
+            display: block;
+        }
+        .instruction-text {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        .experiment-area {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            height: 400px;
+            align-items: flex-end;
+        }
+        .beaker-container {
+            position: relative;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            width: 160px;
+        }
+        .beaker {
+            width: 120px;
+            height: 140px;
+            background: linear-gradient(to right, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.1) 100%);
+            border: 2px solid #000;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            align-items: center;
+            overflow: hidden;
+        }
+        .water {
+            width: 100%;
+            height: 80%;
+            background: linear-gradient(to right, rgba(173,216,230,0.3) 0%, rgba(173,216,230,0.6) 50%, rgba(173,216,230,0.3) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        .ice {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.7);
+            border-radius: 30%;
+        }
+        .test-tube {
+            width: 24px;
+            height: 100px;
+            background: linear-gradient(to right, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0.5) 50%, rgba(255,255,255,0.2) 100%);
+            border: 2px solid #000;
+            border-top: none;
+            border-radius: 0 0 10px 10px;
+            position: absolute;
+            bottom: 200px;
+            transition: all 0.5s ease-in-out;
+        }
+        .test-tube-left {
+            left: calc(50% - 28px);
+        }
+        .test-tube-right {
+            left: calc(50% + 4px);
+        }
+        .solution {
+            width: 100%;
+            height: 40%;
+            position: absolute;
+            bottom: 0;
+            transition: all 0.5s ease-in-out;
+            border-radius: 0 0 8px 8px;
+        }
+        .gray-solution {
+            background: linear-gradient(to right, rgba(169,169,169,0.6) 0%, rgba(169,169,169,0.9) 50%, rgba(169,169,169,0.6) 100%);
+        }
+        .blue-solution {
+            background: linear-gradient(to right, rgba(135,206,235,0.3) 0%, rgba(135,206,235,0.6) 50%, rgba(135,206,235,0.3) 100%);
+        }
+        .dark-blue-solution {
+            background: linear-gradient(to right, rgba(0,0,128,0.5) 0%, rgba(0,0,128,0.8) 50%, rgba(0,0,128,0.5) 100%);
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 0 5px;
+        }
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #timer {
+            font-size: 24px;
+            margin: 0 20px;
+            padding: 5px 10px;
+            border: 2px solid #4CAF50;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="instruction-screen active">
+            <div class="title">온도와 화학 반응 속도 시뮬레이션</div>
+            <div class="instruction-text">
+                <p>이 시뮬레이션은 온도가 화학 반응 속도에 미치는 영향을 보여줍니다.</p>
+                <p><strong>사용 방법:</strong></p>
+                <ol>
+                    <li>세 가지 온도의 물(얼음물, 상온의 물, 뜨거운 물) 중 하나 이상을 선택합니다.</li>
+                    <li>"React" 버튼을 클릭하여 반응을 시작합니다.</li>
+                    <li>각 비커에서 반응이 완료되는 시간을 관찰합니다.</li>
+                    <li>반응이 완료되면 용액의 색상이 변합니다.</li>
+                    <li>"Reset" 버튼을 클릭하여 실험을 초기화할 수 있습니다.</li>
+                </ol>
+            </div>
+            <button id="next-btn">Next</button>
+        </div>
+        <div class="simulation-screen">
+            <div class="title">온도와 화학 반응 속도</div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color gray-solution"></div>
+                    <span>NaHSO₃ + 녹말</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color blue-solution"></div>
+                    <span>KIO₃</span>
+                </div>
+            </div>
+            <div class="experiment-area">
+                <div class="beaker-container">
+                    <div class="test-tube test-tube-left">
+                        <div class="solution gray-solution"></div>
+                    </div>
+                    <div class="test-tube test-tube-right">
+                        <div class="solution blue-solution"></div>
+                    </div>
+                    <div id="ice-beaker" class="beaker">
+                        <div class="water">
+                            <!-- 얼음 조각들은 JavaScript로 동적으로 생성됩니다 -->
+                        </div>
+                    </div>
+                    <button id="ice-btn">얼음물<br>(4℃)</button>
+                </div>
+                <div class="beaker-container">
+                    <div class="test-tube test-tube-left">
+                        <div class="solution gray-solution"></div>
+                    </div>
+                    <div class="test-tube test-tube-right">
+                        <div class="solution blue-solution"></div>
+                    </div>
+                    <div id="room-beaker" class="beaker">
+                        <div class="water"></div>
+                    </div>
+                    <button id="room-btn">상온의 물<br>(25℃)</button>
+                </div>
+                <div class="beaker-container">
+                    <div class="test-tube test-tube-left">
+                        <div class="solution gray-solution"></div>
+                    </div>
+                    <div class="test-tube test-tube-right">
+                        <div class="solution blue-solution"></div>
+                    </div>
+                    <div id="hot-beaker" class="beaker">
+                        <div class="water"></div>
+                    </div>
+                    <button id="hot-btn">뜨거운 물<br>(70℃)</button>
+                </div>
+            </div>
+            <div class="controls">
+                <button id="react-btn">React</button>
+                <div id="timer">00:00.0</div>
+                <button id="reset-btn">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activeBeakers = [];
+        let isReacting = false;
+        let timer;
+        let startTime;
+
+        function createIce(beaker) {
+            const water = beaker.querySelector('.water');
+            for (let i = 0; i < 20; i++) {
+                const ice = document.createElement('div');
+                ice.className = 'ice';
+                const size = Math.random() * 20 + 10;
+                ice.style.width = `${size}px`;
+                ice.style.height = `${size}px`;
+                ice.style.left = `${Math.random() * 100}%`;
+                ice.style.top = `${Math.random() * 100}%`;
+                ice.style.transform = `rotate(${Math.random() * 360}deg)`;
+                water.appendChild(ice);
+            }
+        }
+
+        function activateBeaker(beakerId) {
+            if (!isReacting && activeBeakers.length < 3 && !activeBeakers.includes(beakerId)) {
+                activeBeakers.push(beakerId);
+                const beakerContainer = document.getElementById(beakerId).parentElement;
+                const testTubes = beakerContainer.querySelectorAll('.test-tube');
+                testTubes.forEach((tube, index) => {
+                    tube.style.bottom = '120px';
+                });
+                document.getElementById(beakerId).style.borderColor = "red";
+            }
+        }
+
+        function startReaction() {
+            if (!isReacting && activeBeakers.length > 0) {
+                isReacting = true;
+                startTime = Date.now();
+                timer = setInterval(updateTimer, 100);
+                
+                activeBeakers.forEach(beakerId => {
+                    const beakerContainer = document.getElementById(beakerId).parentElement;
+                    const leftTube = beakerContainer.querySelector('.test-tube-left .solution');
+                    const rightTube = beakerContainer.querySelector('.test-tube-right .solution');
+                    
+                    rightTube.style.height = "0%";
+                    leftTube.style.height = "80%";
+                    
+                    const reactionTime = getReactionTime(beakerId);
+                    setTimeout(() => {
+                        leftTube.classList.remove('gray-solution');
+                        leftTube.classList.add('dark-blue-solution');
+                    }, reactionTime);
+                });
+            }
+        }
+
+        function getReactionTime(beakerId) {
+            switch(beakerId) {
+                case 'ice-beaker': return 12000;
+                case 'room-beaker': return 8000;
+                case 'hot-beaker': return 2000;
+            }
+        }
+
+        function updateTimer() {
+            const elapsedTime = Date.now() - startTime;
+            const seconds = Math.floor(elapsedTime / 1000);
+            const tenths = Math.floor((elapsedTime % 1000) / 100);
+            document.getElementById('timer').textContent = 
+                `${String(seconds).padStart(2, '0')}:${tenths}`;
+        }
+
+        function resetExperiment() {
+            clearInterval(timer);
+            isReacting = false;
+            activeBeakers = [];
+            document.getElementById('timer').textContent = '00:00.0';
+            
+            const allBeakers = document.querySelectorAll('.beaker');
+            allBeakers.forEach(beaker => {
+                beaker.style.borderColor = "#000";
+            });
+
+            const allTestTubes = document.querySelectorAll('.test-tube');
+            allTestTubes.forEach((tube, index) => {
+                tube.style.bottom = '200px';
+                const solution = tube.querySelector('.solution');
+                solution.classList.remove('dark-blue-solution');
+                if (tube.classList.contains('test-tube-left')) {
+                    solution.classList.add('gray-solution');
+                } else {
+                    solution.classList.add('blue-solution');
+                }
+                solution.style.height = '40%';
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            createIce(document.getElementById('ice-beaker'));
+            
+            document.getElementById('next-btn').addEventListener('click', function() {
+                document.querySelector('.instruction-screen').classList.remove('active');
+                document.querySelector('.simulation-screen').classList.add('active');
+            });
+
+            document.getElementById('ice-btn').addEventListener('click', () => activateBeaker('ice-beaker'));
+            document.getElementById('room-btn').addEventListener('click', () => activateBeaker('room-beaker'));
+            document.getElementById('hot-btn').addEventListener('click', () => activateBeaker('hot-beaker'));
+            document.getElementById('react-btn').addEventListener('click', startReaction);
+            document.getElementById('reset-btn').addEventListener('click', resetExperiment);
+        });
+    </script>
+</body>
+</html>
