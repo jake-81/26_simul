@@ -1,6 +1,4 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
+<html lang="ko"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>화학 실험</title>
@@ -51,10 +49,36 @@
             padding: 20px;
             text-align: center;  /* 텍스트 가운데 정렬 */
         }
+        
+        /* 🧪 새로 꾸민 화학 실험 타이틀 박스 디자인 */
         h1 {
             text-align: center;
-            color: #333;
+            color: #f3f4f5; /* 깊이감 있는 네이비 블루 색상 */
+            font-size: 2.0em;
+            text-shadow: 1px 1px 3px rgba(136, 133, 133, 0.1); /* 은은한 글자 그림자 */
+            
+            /* 박스 스타일 */
+            max-width: 350px;
+            margin: 40px auto 30px auto; /* 위아래 여백 조절 */
+            padding: 15px 30px;
+            background: #080808; /* 깔끔한 흰색 배경 */
+            border-left: 8px solid #484849; /* 왼쪽에 강조 포인트 바 추가 */
+            border-radius: 4px 12px 12px 4px; /* 오른쪽 모서리만 더 둥글게 */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06); /* 부드러운 박스 그림자 */
+            
+            /* 중앙 정렬 및 아이콘 배치 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
         }
+
+        /* 타이틀 앞에 화학 이모지 자동 추가 */
+        h1::before {
+            content: '🧪';
+            font-size: 1.1em;
+        }
+
         h2 {
             margin-top: 0;
             color: #ffffff;
@@ -73,8 +97,10 @@
         .first-order-reaction { background-image: url('first_order_reaction_bg.jpg'); }
         .concentration-rate { background-image: url('concentration_rate_bg.jpg'); }
         .temperature-rate { background-image: url('temperature_rate_bg.jpg'); }
+        /* 이온 결합 배경 이미지 추가 */
+        .ionic-bond { background-image: url('ionbond_bg.jpg'); }
     </style>
-</head>
+<link rel="manifest" href="/manifest.json"></head>
 <body>
     <h1>화학 실험</h1>
     <div class="container">
@@ -84,7 +110,7 @@
                 <p>다양한 원자의 질량 비교 실험</p>
             </div>
         </div>
-        <div class="card quantitative-relationships" onclick="openSimulation('quantitative_relationships.html')">
+        <div class="card quantitative-relationships" onclick="openSimulation('quantitative-relationships-process.html')">
             <div class="card-content">
                 <h2>화학 반응의 양적 관계</h2>
                 <p>화학 반응에서의 물질량 관계 탐구</p>
@@ -120,6 +146,12 @@
                 <p>온도가 화학 반응 속도에 미치는 영향 관찰</p>
             </div>
         </div>
+        <div class="card ionic-bond" onclick="openSimulation('ionicbond_game.html')">
+            <div class="card-content">
+                <h2>이온 결합 게임</h2>
+                <p>양이온과 음이온의 결합을 통한 화합물 생성</p>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -127,5 +159,18 @@
             window.location.href = fileName;
         }
     </script>
-</body>
-</html>
+
+
+<script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./serviceWorker.js')
+          .then(registration => {
+            console.log('Service worker registered:', registration);
+          })
+          .catch(error => {
+            console.log('Service worker registration failed:', error);
+          });
+      });
+    }
+  </script></body></html>

@@ -1,4 +1,5 @@
-    <title>화학 반응 속도</title>
+<html>
+    <title>HCl + Mg Reaction Simulator</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.7.0/chart.min.js"></script>
     <style>
         body {
@@ -7,7 +8,43 @@
             flex-direction: column;
             align-items: center;
             background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
         }
+        
+        /* 🏠 홈으로 가기 버튼 스타일 */
+        .btn-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1002; /* 설명창(1000)보다 항상 위에 배치하여 클릭 가능하게 수정 */
+            padding: 10px 16px;
+            font-family: 'Malgun Gothic', Arial, sans-serif;
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #333;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        /* 홈 버튼 호버 효과 */
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            background-color: #f8f9fa;
+        }
+        /* 홈 버튼 클릭 효과 */
+        .btn-home:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+        
         #simulator {
             width: 600px;
             height: 300px;
@@ -16,37 +53,19 @@
             margin-bottom: 20px;
             position: relative;
             overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         #beaker {
+            width: 200px;
+            height: 250px;
+            background-color: #e6f7ff;
+            border: 2px solid #000;
             position: absolute;
             bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 220px;
-            border: 2px solid #000;
+            left: 50px;
+            border-radius: 0 0 10px 10px;
             border-top: none;
-            border-radius: 0 0 20px 20px;
-            overflow: hidden;
-        }
-        #beaker::before {
-            content: "";
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 140px;
-            background-color: #ffff99;
-            opacity: 0.5;
-        }
-        #beaker::after {
-            content: "HCl(aq)";
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translatex(-50%);
-            font-size: 24px;
-            color: #666;
         }
         #magnesium {
             width: 50px;
@@ -54,22 +73,13 @@
             background-color: #c0c0c0;
             position: absolute;
             bottom: 30px;
-            left: 275px;
+            left: 125px;
+            border-radius: 2px;
         }
-        #magnesium::after {
-    content: "Mg(s)";
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 15px;
-    color: #333;
-    white-space: nowrap;
-}
         #bubbles {
             position: absolute;
             bottom: 40px;
-            left: 250px;
+            left: 100px;
             width: 100px;
             height: 200px;
             overflow: hidden;
@@ -79,113 +89,190 @@
             background-color: #fff;
             border-radius: 50%;
             opacity: 0.7;
+            border: 1px solid rgba(0,0,0,0.1);
         }
         #controls {
             margin-bottom: 20px;
+            background: #fff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        #controls select, #controls button {
+            padding: 8px 12px;
+            font-size: 14px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        #controls button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        #controls button:hover {
+            background-color: #45a049;
+        }
+        #chart-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         #chart {
             width: 800px;
             height: 400px;
         }
-        select, button {
-            margin: 5px;
-            padding: 5px;
+
+        /* 📝 모달(설명창) 스타일 */
+        .modal {
+            display: flex;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5); /* 반투명 검은 배경 */
+            justify-content: center;
+            align-items: center;
         }
-        button {
-            background-color: #4CAF50;
+        .modal-content {
+            background-color: #fefefe;
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 500px;
+            text-align: left;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            line-height: 1.6;
+        }
+        .modal-content h2 {
+            margin-top: 0;
+            color: #333;
+            text-align: center;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        .modal-content ol {
+            padding-left: 20px;
+            color: #444;
+        }
+        .modal-content li {
+            margin-bottom: 10px;
+        }
+        .btn-start-modal {
+            display: block;
+            margin: 25px auto 0;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
             border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            cursor: pointer;
             transition: background-color 0.3s;
         }
-        button:hover {
-            background-color: #45a049;
+        .btn-start-modal:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 <body>
-    <h1>화학 반응 속도(Mg+HCl)</h1>
+    <button class="btn-home" onclick="goToHome()">🏠 홈으로</button>
+
+    <div id="instructionsModal" class="modal">
+        <div class="modal-content">
+            <h2>🧪 반응 속도 시뮬레이션 사용 방법</h2>
+            <ol>
+                <li>하단의 설정 메뉴에서 <b>염산(HCl)의 농도</b>(5% ~ 20%)를 선택하세요. 농도가 높을수록 반응 속도가 빨라집니다.</li>
+                <li>반응시킬 <b>마그네슘(Mg)의 질량</b>(1g 또는 2g)을 선택하세요. 질량이 클수록 생성되는 기체의 총량이 많아집니다.</li>
+                <li><b>[Start Simulation]</b> 버튼을 눌러 시뮬레이션을 시작하세요.</li>
+                <li>비커 안에서 수소 기체 방울이 발생하는 모습과, 아래쪽 그래프에 그려지는 수소 기체 발생량 변화를 관찰하세요.</li>
+                <li>조건을 변경하여 시뮬레이션을 다시 실행하면 <b>그래프가 누적</b>되어 농도 및 질량에 따른 결과를 쉽게 비교할 수 있습니다.</li>
+            </ol>
+            <button class="btn-start-modal" onclick="closeInstructions()">시뮬레이션 시작하기</button>
+        </div>
+    </div>
+
+    <h1>HCl + Mg Reaction Simulator</h1>
+    
     <div id="simulator">
         <div id="beaker"></div>
         <div id="magnesium"></div>
         <div id="bubbles"></div>
     </div>
+    
     <div id="controls">
-        HCl 농도(%):
+        <label for="concentration">HCl Concentration (농도):</label>
         <select id="concentration">
             <option value="5">5%</option>
             <option value="10">10%</option>
             <option value="15">15%</option>
             <option value="20">20%</option>
         </select>
-        Mg 질량(g):
+        
+        <label for="mass">Mg Mass (질량):</label>
         <select id="mass">
             <option value="1">1g</option>
             <option value="2">2g</option>
         </select>
-        <button onclick="startSimulation()">Start</button>
-        <button onclick="resetSimulation()">Reset</button>
+        
+        <button onclick="startSimulation()">Start Simulation</button>
     </div>
     
-    <canvas id="chart"></canvas>
+    <div id="chart-container">
+        <canvas id="chart"></canvas>
+    </div>
 
     <script>
+        // 🏠 인덱스 초기 화면(index.html)으로 이동하는 함수 추가됨
+        function goToHome() {
+            window.location.href = 'index.html';
+        }
+
+        // 모달창 닫기 함수
+        function closeInstructions() {
+            document.getElementById('instructionsModal').style.display = 'none';
+        }
+
         let chart;
-        let simulations = {};
+        let animationId;
+        let startTime;
 
         function startSimulation() {
-    const concentration = parseInt(document.getElementById('concentration').value);
-    const mass = parseInt(document.getElementById('mass').value);
-    const key = `${concentration}-${mass}`;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            const concentration = parseInt(document.getElementById('concentration').value);
+            const mass = parseInt(document.getElementById('mass').value);
 
-    if (simulations[key]) {
-        return;
-    }
+            // Clear existing bubbles
+            document.getElementById('bubbles').innerHTML = '';
 
-    if (!chart) {
-        setupChart();
-    }
+            // Setup chart if it doesn't exist
+            if (!chart) {
+                setupChart();
+            }
 
-    simulations[key] = {
-        startTime: Date.now(),
-        concentration: concentration,
-        mass: mass,
-        data: []
-    };
-
-    animate();
-}
-
-        function resetSimulation() {
-    clearInterval(animationInterval);
-    document.getElementById('bubbles').innerHTML = '';
-}
-function animate() {
-    let activeSims = false;
-
-    for (let key in simulations) {
-        const sim = simulations[key];
-        const currentTime = (Date.now() - sim.startTime) / 1000;
-        if (currentTime <= 30) {
-            const volume = calculateVolume(currentTime, sim.concentration, sim.mass);
-            updateChart(currentTime, volume, sim.concentration, sim.mass);
-            createBubble(volume);
-            activeSims = true;
+            startTime = Date.now();
+            animate(concentration, mass);
         }
-    }
 
-    if (activeSims) {
-        requestAnimationFrame(animate);
-    }
-}
+        function animate(concentration, mass) {
+            const currentTime = (Date.now() - startTime) / 1000; // time in seconds
+            if (currentTime <= 30) {
+                const volume = calculateVolume(currentTime, concentration, mass);
+                updateChart(currentTime, volume, concentration, mass);
+                createBubble(volume);
+                animationId = requestAnimationFrame(() => animate(concentration, mass));
+            }
+        }
 
         function calculateVolume(time, concentration, mass) {
             const maxVolume = mass === 1 ? 10 : 20; // 10mL for 1g, 20mL for 2g
@@ -245,15 +332,6 @@ function animate() {
             });
         }
 
-        function resetSimulation() {
-    simulations = {};
-    if (chart) {
-        chart.data.datasets = [];
-        chart.update();
-    }
-    document.getElementById('bubbles').innerHTML = '';
-}
-
         function updateChart(time, volume, concentration, mass) {
             let dataset = chart.data.datasets.find(ds => ds.label === `${concentration}% - ${mass}g`);
             if (!dataset) {
@@ -261,7 +339,8 @@ function animate() {
                     label: `${concentration}% - ${mass}g`,
                     data: [],
                     borderColor: `hsl(${concentration * 10}, ${mass * 50}%, 50%)`,
-                    fill: false
+                    fill: false,
+                    tension: 0.1
                 };
                 chart.data.datasets.push(dataset);
             }

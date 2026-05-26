@@ -38,6 +38,13 @@
             text-align: left;
             margin-bottom: 20px;
         }
+        /* 설명 화면의 버튼들을 가로로 배치하기 위한 스타일 */
+        .instruction-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
         .experiment-area {
             display: flex;
             justify-content: space-around;
@@ -154,6 +161,13 @@
         button:hover {
             background-color: #45a049;
         }
+        /* 홈으로 버튼 스타일 (클래스로 변경하여 두 버튼에 공통 적용) */
+        .home-btn {
+            background-color: #007BFF;
+        }
+        .home-btn:hover {
+            background-color: #0056b3;
+        }
         #timer {
             font-size: 24px;
             margin: 0 20px;
@@ -178,8 +192,12 @@
                     <li>"Reset" 버튼을 클릭하여 실험을 초기화할 수 있습니다.</li>
                 </ol>
             </div>
-            <button id="next-btn">Next</button>
+            <div class="instruction-controls">
+                <button id="next-btn">Next</button>
+                <button class="home-btn">홈으로</button>
+            </div>
         </div>
+
         <div class="simulation-screen">
             <div class="title">온도와 화학 반응 속도</div>
             <div class="legend">
@@ -202,8 +220,7 @@
                     </div>
                     <div id="ice-beaker" class="beaker">
                         <div class="water">
-                            <!-- 얼음 조각들은 JavaScript로 동적으로 생성됩니다 -->
-                        </div>
+                            </div>
                     </div>
                     <button id="ice-btn">얼음물<br>(4℃)</button>
                 </div>
@@ -236,6 +253,7 @@
                 <button id="react-btn">React</button>
                 <div id="timer">00:00.0</div>
                 <button id="reset-btn">Reset</button>
+                <button class="home-btn">홈으로</button>
             </div>
         </div>
     </div>
@@ -350,6 +368,14 @@
             document.getElementById('hot-btn').addEventListener('click', () => activateBeaker('hot-beaker'));
             document.getElementById('react-btn').addEventListener('click', startReaction);
             document.getElementById('reset-btn').addEventListener('click', resetExperiment);
+            
+            /* 모든 '홈으로' 버튼에 클릭 이벤트 일괄 바인딩 (설명 화면 + 시뮬레이션 화면) */
+            const homeButtons = document.querySelectorAll('.home-btn');
+            homeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    window.location.href = 'index.html';
+                });
+            });
         });
     </script>
 </body>

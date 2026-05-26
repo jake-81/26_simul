@@ -11,6 +11,40 @@
     margin: 0;
     background-color: #f0f0f0;
   }
+  
+  /* 🏠 홈으로 가기 버튼 스타일 (z-index 수정 완료) */
+  .btn-home {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1005; /* ⚠️ 설명창(1001)보다 항상 위에 배치하여 클릭 가능하게 수정 */
+    padding: 10px 16px;
+    font-family: 'Malgun Gothic', Arial, sans-serif;
+    font-size: 0.95em;
+    font-weight: bold;
+    color: #333;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  /* 홈 버튼 호버 효과 */
+  .btn-home:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    background-color: #f8f9fa;
+  }
+  /* 홈 버튼 클릭 효과 */
+  .btn-home:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+
   .container {
     text-align: center;
     display: flex;
@@ -165,7 +199,7 @@
   .modal {
     display: flex;
     position: fixed;
-    z-index: 1;
+    z-index: 1001; /* 홈 버튼이 1005이므로 이제 설명창 뒤로 가려집니다 */
     left: 0;
     top: 0;
     width: 100%;
@@ -187,6 +221,9 @@
 </style>
 </head>
 <body>
+
+<button class="btn-home" onclick="goToHome()">🏠 홈으로</button>
+
 <div id="instructionsModal" class="modal">
   <div class="modal-content">
     <h2>How to Use the Atomic Mass Simulator</h2>
@@ -211,6 +248,8 @@
         <div class="beam"></div>
         <div class="pan pan-left"></div>
         <div class="pan pan-right"></div>
+        <div class="mass-display mass-left">0</div>
+        <div class="mass-display mass-right">0</div>
         <button class="select-button select-left" onclick="selectPan('left')">Select</button>
         <button class="select-button select-right" onclick="selectPan('right')">Select</button>
       </div>
@@ -231,6 +270,11 @@
   const masses = { H: 1, O: 16, C: 12, N: 14 };
   const colors = { H: 'white', O: 'red', C: 'black', N: 'blue' };
   const sizes = { H: 20, O: 39, C: 42, N: 40 };
+
+  // 🏠 인덱스 초기 화면으로 이동하는 함수
+  function goToHome() {
+    window.location.href = 'index.html';
+  }
 
   function startSimulator() {
     document.getElementById('instructionsModal').style.display = 'none';
@@ -305,7 +349,10 @@
     const leftMass = atoms.left.reduce((sum, atom) => sum + masses[atom], 0);
     const rightMass = atoms.right.reduce((sum, atom) => sum + masses[atom], 0);
     const beam = document.querySelector('.beam');
-        
+    
+    document.querySelector('.mass-left').textContent = leftMass;
+    document.querySelector('.mass-right').textContent = rightMass;
+    
     const angle = Math.atan2(rightMass - leftMass, 20) * (180 / Math.PI);
     const clampedAngle = Math.max(Math.min(angle, 20), -20);
     

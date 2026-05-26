@@ -4,6 +4,40 @@
 <title>물의 전기분해 시뮬레이션</title>
 <style>
   body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f0f0; }
+  
+  /* 🏠 홈으로 가기 버튼 스타일 추가 */
+  .btn-home {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+    padding: 10px 16px;
+    font-family: 'Malgun Gothic', Arial, sans-serif;
+    font-size: 0.95em;
+    font-weight: bold;
+    color: #333;
+    background-color: #ffffff;
+    border: none;
+    border-radius: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  /* 홈 버튼 호버 효과 */
+  .btn-home:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    background-color: #f8f9fa;
+  }
+  /* 홈 버튼 클릭 효과 */
+  .btn-home:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  }
+
   .container { text-align: center; }
   .introduction, .simulation { width: 100%; max-width: 600px; }
   .introduction { background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
@@ -77,6 +111,9 @@
 </style>
 </head>
 <body>
+
+<button class="btn-home" onclick="goToHome()">🏠 홈으로</button>
+
 <div class="container">
   <div class="introduction">
     <h1>물의 전기 분해</h1>
@@ -130,6 +167,11 @@
   
   let isRunning = false;
   let animationFrame;
+
+  // 🏠 인덱스 초기 화면으로 이동하는 함수 추가
+  function goToHome() {
+    window.location.href = 'index.html';
+  }
 
   nextBtn.addEventListener('click', () => {
     introductionDiv.classList.add('hidden');

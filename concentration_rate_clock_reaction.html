@@ -7,25 +7,25 @@
     <style>
          #instructionScreen {
             position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: white;
-    z-index: 1000;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    box-sizing: border-box;
-    }
-    #nextButton {
-        font-size: 16px;
-        padding: 10px 20px;
-        margin-top: 20px;
-        cursor: pointer;
-    }
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: white;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #nextButton {
+            font-size: 16px;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+        }
         canvas { border: 2px solid navy; }
         button {
             margin: 10px;
@@ -42,7 +42,7 @@
         #canvasContainer {
             position: relative;
             width: 800px;
-            margin: 0 auto;
+            margin: 50px auto 0 auto; /* 🏠 홈 버튼 공간 확보를 위해 위쪽 여백 수정 */
         }
         #reactionCanvas {
             border: 2px solid navy;
@@ -60,16 +60,52 @@
         #h2oButton { left: 350px; top: 220px; }
         #nahso3Button { left: 500px; top: 220px; }
         #buttonContainer {
-    text-align: center;
-    margin-top: 20px;
-}
-#reactionButton, #resetButton {
-    display: inline-block;
-}
-        </style>
+            text-align: center;
+            margin-top: 20px;
+        }
+        #reactionButton, #resetButton {
+            display: inline-block;
+        }
+
+        /* 🏠 홈으로 가기 버튼 스타일 추가 */
+        .btn-home {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1005; /* ⚠️ 안내 스크린(1000)보다 위에 배치하여 항상 클릭 가능하게 설정 */
+            padding: 10px 16px;
+            font-family: 'Malgun Gothic', Arial, sans-serif;
+            font-size: 0.95em;
+            font-weight: bold;
+            color: #333;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin: 0; /* 기본 마진 리셋 */
+        }
+        /* 홈 버튼 호버 효과 */
+        .btn-home:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            background-color: #f8f9fa;
+        }
+        /* 홈 버튼 클릭 효과 */
+        .btn-home:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+    </style>
 </head>
 <body>
-    </style>
+
+    <button class="btn-home" onclick="goToHome()">🏠 홈으로</button>
+
     <div id="instructionScreen">
         <h2>사용 방법</h2>
         <ol>
@@ -105,6 +141,11 @@
             {x: 650, y: 400, kio3: 0, water: 0, nahso3: 0, mixed: false, time: 3, counter: 0}
         ];
        
+        // 🏠 인덱스 초기 화면으로 이동하는 함수 추가
+        function goToHome() {
+            window.location.href = 'index.html';
+        }
+
         function drawTestTube(x, y, width, height, fillColor, fillLevel) {
             const bottomRadius = width / 2;
             const topRadius = width / 2.5;
@@ -273,9 +314,9 @@
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.fillStyle = 'black';
-    ctx.font = 'bold 24px Arial';
-    ctx.textAlign = 'center';
-    ctx.fillText('농도와 화학 반응 속도', canvas.width / 2, 40);
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('농도와 화학 반응 속도', canvas.width / 2, 40);
             drawTubes();
             drawDropper(250, 100, 'rgba(180, 220, 255, 0.7)');
             drawDropper(400, 100, 'rgba(180, 220, 255, 0.7)');
@@ -288,63 +329,57 @@
             draw();
         }
 
-        function reset() {
-    step = 0;
-    tubes = tubes.map(tube => ({...tube, kio3: 0, water: 0, nahso3: 0, mixed: false, counter: 0}));
-    draw();
-}
-
-document.getElementById('kio3Button').addEventListener('click', () => {
-    if (step === 0) {
-        tubes[0].kio3 = 1; tubes[1].kio3 = 1.5; tubes[2].kio3 = 2; tubes[3].kio3 = 2.5;
-        step++;
-        draw();
-    }
-});
-
-document.getElementById('h2oButton').addEventListener('click', () => {
-    if (step === 1) {
-        tubes[0].water = 1.5; tubes[1].water = 1; tubes[2].water = 0.5; tubes[3].water = 0;
-        step++;
-        draw();
-    }
-});
-
-document.getElementById('nahso3Button').addEventListener('click', () => {
-    if (step === 2) {
-        tubes.forEach(tube => tube.nahso3 = 2.5);
-        step++;
-        draw();
-    }
-});
-
-document.getElementById('reactionButton').addEventListener('click', () => {
-    if (step === 3) {
-        tubes.forEach(tube => {
-            if (!tube.mixed) {
-                tube.mixed = true;
-                let interval = setInterval(() => {
-                    tube.counter++;
-                    draw();
-                    if (tube.counter >= tube.time) {
-                        clearInterval(interval);
-                    }
-                }, 1000);
+        document.getElementById('kio3Button').addEventListener('click', () => {
+            if (step === 0) {
+                tubes[0].kio3 = 1; tubes[1].kio3 = 1.5; tubes[2].kio3 = 2; tubes[3].kio3 = 2.5;
+                step++;
+                draw();
             }
         });
+
+        document.getElementById('h2oButton').addEventListener('click', () => {
+            if (step === 1) {
+                tubes[0].water = 1.5; tubes[1].water = 1; tubes[2].water = 0.5; tubes[3].water = 0;
+                step++;
+                draw();
+            }
+        });
+
+        document.getElementById('nahso3Button').addEventListener('click', () => {
+            if (step === 2) {
+                tubes.forEach(tube => tube.nahso3 = 2.5);
+                step++;
+                draw();
+            }
+        });
+
+        document.getElementById('reactionButton').addEventListener('click', () => {
+            if (step === 3) {
+                tubes.forEach(tube => {
+                    if (!tube.mixed) {
+                        tube.mixed = true;
+                        let interval = setInterval(() => {
+                            tube.counter++;
+                            draw();
+                            if (tube.counter >= tube.time) {
+                                clearInterval(interval);
+                            }
+                        }, 1000);
+                    }
+                });
+                draw();
+            }
+        });
+
+        document.getElementById('resetButton').addEventListener('click', reset);
+
+        document.getElementById('nextButton').addEventListener('click', function() {
+            document.getElementById('instructionScreen').style.display = 'none';
+            draw();
+        });
+
         draw();
-    }
-});
-
-document.getElementById('resetButton').addEventListener('click', reset);
-
-document.getElementById('nextButton').addEventListener('click', function() {
-    document.getElementById('instructionScreen').style.display = 'none';
-    draw();
-});
-
-draw();
-</script>
+    </script>
   
 </body>
 </html>
